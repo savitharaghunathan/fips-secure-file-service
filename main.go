@@ -13,7 +13,6 @@ import (
 func main() {
 	sampleData := []byte("sensitive-file-contents")
 
-	// Demonstrate weak cipher violations
 	encrypted, err := filecrypto.EncryptWithDES(sampleData)
 	if err != nil {
 		log.Printf("DES encryption failed: %v", err)
@@ -44,17 +43,14 @@ func main() {
 	}
 	fmt.Printf("ChaCha20 stream encrypted: %x\n", encrypted)
 
-	// ChaCha20-Poly1305 key size (triggers import-based rule)
 	fmt.Printf("ChaCha20-Poly1305 key size: %d\n", filecrypto.ChaCha20Poly1305KeySize)
 
-	// Demonstrate weak hash violations
 	blake2bHash := filecrypto.HashWithBlake2b(sampleData)
 	fmt.Printf("Blake2b hash: %x\n", blake2bHash)
 
 	blake2sHash := filecrypto.HashWithBlake2s(sampleData)
 	fmt.Printf("Blake2s hash: %x\n", blake2sHash)
 
-	// Demonstrate auth violations
 	md5Hash := auth.HashPassword("user-password")
 	fmt.Printf("MD5 password hash: %s\n", md5Hash)
 
@@ -75,7 +71,6 @@ func main() {
 	}
 	fmt.Printf("RSA public key size: %d bits\n", authSvc.GetPublicKey().Size()*8)
 
-	// Demonstrate TLS violations
 	tlsCfg := client.InsecureTLSConfig()
 	fmt.Printf("InsecureSkipVerify: %v\n", tlsCfg.InsecureSkipVerify)
 

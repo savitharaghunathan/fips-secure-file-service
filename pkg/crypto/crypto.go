@@ -13,14 +13,9 @@ import (
 )
 
 // ChaCha20Poly1305KeySize exports the key size to confirm the import is referenced.
-// Violations:
-//   - fips-go-crypto-00400: ChaCha20-Poly1305 usage (via import)
 var ChaCha20Poly1305KeySize = chacha20poly1305.KeySize
 
 // EncryptWithDES encrypts data using DES with a hardcoded key.
-// Violations:
-//   - fips-go-weak-00100: DES cipher usage
-//   - fips-go-ops-00100: Hardcoded cryptographic key
 func EncryptWithDES(data []byte) ([]byte, error) {
 	block, err := des.NewCipher([]byte("8bytekey"))
 	if err != nil {
@@ -37,8 +32,6 @@ func EncryptWithDES(data []byte) ([]byte, error) {
 }
 
 // EncryptWith3DES encrypts data using Triple DES with a hardcoded key.
-// Violations:
-//   - fips-go-weak-00101: 3DES cipher usage
 func EncryptWith3DES(data []byte) ([]byte, error) {
 	key := []byte("123456789012345678901234")
 	block, err := des.NewTripleDESCipher(key)
@@ -56,8 +49,6 @@ func EncryptWith3DES(data []byte) ([]byte, error) {
 }
 
 // EncryptWithRC4 encrypts data using the RC4 stream cipher.
-// Violations:
-//   - fips-go-weak-00102: RC4 cipher usage
 func EncryptWithRC4(data []byte) ([]byte, error) {
 	c, err := rc4.NewCipher([]byte("rc4-secret-key!!"))
 	if err != nil {
@@ -70,8 +61,6 @@ func EncryptWithRC4(data []byte) ([]byte, error) {
 }
 
 // EncryptWithBlowfish encrypts data using the Blowfish cipher.
-// Violations:
-//   - fips-go-crypto-00200: Blowfish cipher usage
 func EncryptWithBlowfish(data []byte) ([]byte, error) {
 	key := []byte("blowfish-key-material!")
 	c, err := blowfish.NewCipher(key)
@@ -88,8 +77,6 @@ func EncryptWithBlowfish(data []byte) ([]byte, error) {
 }
 
 // StreamEncryptWithChaCha20 encrypts data using the ChaCha20 stream cipher.
-// Violations:
-//   - fips-go-crypto-00300: ChaCha20 stream cipher usage
 func StreamEncryptWithChaCha20(data []byte) ([]byte, error) {
 	key := make([]byte, chacha20.KeySize)
 	copy(key, []byte("chacha20-stream-cipher-key!"))
@@ -106,16 +93,12 @@ func StreamEncryptWithChaCha20(data []byte) ([]byte, error) {
 }
 
 // HashWithBlake2b hashes data using the Blake2b hash function.
-// Violations:
-//   - fips-go-crypto-00600: Blake2b hash usage
 func HashWithBlake2b(data []byte) []byte {
 	hash := blake2b.Sum256(data)
 	return hash[:]
 }
 
 // HashWithBlake2s hashes data using the Blake2s hash function.
-// Violations:
-//   - fips-go-crypto-00601: Blake2s hash usage
 func HashWithBlake2s(data []byte) []byte {
 	hash := blake2s.Sum256(data)
 	return hash[:]
