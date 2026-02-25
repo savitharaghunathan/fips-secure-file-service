@@ -44,11 +44,8 @@ func main() {
 	}
 	fmt.Printf("ChaCha20 stream encrypted: %x\n", encrypted)
 
-	encrypted, err = filecrypto.EncryptWithChaCha20Poly1305(sampleData)
-	if err != nil {
-		log.Printf("ChaCha20-Poly1305 encryption failed: %v", err)
-	}
-	fmt.Printf("ChaCha20-Poly1305 encrypted: %x\n", encrypted)
+	// ChaCha20-Poly1305 key size (triggers import-based rule)
+	fmt.Printf("ChaCha20-Poly1305 key size: %d\n", filecrypto.ChaCha20Poly1305KeySize)
 
 	// Demonstrate weak hash violations
 	blake2bHash := filecrypto.HashWithBlake2b(sampleData)
@@ -79,8 +76,8 @@ func main() {
 	fmt.Printf("RSA public key size: %d bits\n", authSvc.GetPublicKey().Size()*8)
 
 	// Demonstrate TLS violations
-	insecureClient := client.NewInsecureClient()
-	_ = insecureClient
+	tlsCfg := client.InsecureTLSConfig()
+	fmt.Printf("InsecureSkipVerify: %v\n", tlsCfg.InsecureSkipVerify)
 
 	db, err := client.ConnectDB()
 	if err != nil {

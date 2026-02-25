@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"crypto/cipher"
 	"crypto/des"
 	"crypto/rc4"
 	"fmt"
@@ -13,11 +12,15 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
-// EncryptWithDES encrypts data using DES with a hardcoded key and static IV.
+// ChaCha20Poly1305KeySize exports the key size to confirm the import is referenced.
+// Violations:
+//   - fips-go-crypto-00400: ChaCha20-Poly1305 usage (via import)
+var ChaCha20Poly1305KeySize = chacha20poly1305.KeySize
+
+// EncryptWithDES encrypts data using DES with a hardcoded key.
 // Violations:
 //   - fips-go-weak-00100: DES cipher usage
 //   - fips-go-ops-00100: Hardcoded cryptographic key
-//   - fips-go-ops-00101: Hardcoded IV
 func EncryptWithDES(data []byte) ([]byte, error) {
 	block, err := des.NewCipher([]byte("8bytekey"))
 	if err != nil {
@@ -26,8 +29,9 @@ func EncryptWithDES(data []byte) ([]byte, error) {
 
 	padded := pkcs5Pad(data, block.BlockSize())
 	ciphertext := make([]byte, len(padded))
-	mode := cipher.NewCBCEncrypter(block, []byte("initialv"))
-	mode.CryptBlocks(ciphertext, padded)
+	for i := 0; i < len(padded); i += block.BlockSize() {
+		block.Encrypt(ciphertext[i:i+block.BlockSize()], padded[i:i+block.BlockSize()])
+	}
 
 	return ciphertext, nil
 }
@@ -44,9 +48,9 @@ func EncryptWith3DES(data []byte) ([]byte, error) {
 
 	padded := pkcs5Pad(data, block.BlockSize())
 	ciphertext := make([]byte, len(padded))
-	iv := []byte("12345678")
-	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(ciphertext, padded)
+	for i := 0; i < len(padded); i += block.BlockSize() {
+		block.Encrypt(ciphertext[i:i+block.BlockSize()], padded[i:i+block.BlockSize()])
+	}
 
 	return ciphertext, nil
 }
@@ -75,7 +79,6 @@ func EncryptWithBlowfish(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("blowfish cipher creation failed: %w", err)
 	}
 
-	// Blowfish has 8-byte block size
 	if len(data) < 8 {
 		data = pkcs5Pad(data, 8)
 	}
@@ -100,22 +103,6 @@ func StreamEncryptWithChaCha20(data []byte) ([]byte, error) {
 	ciphertext := make([]byte, len(data))
 	c.XORKeyStream(ciphertext, data)
 	return ciphertext, nil
-}
-
-// EncryptWithChaCha20Poly1305 encrypts data using ChaCha20-Poly1305 AEAD.
-// Violations:
-//   - fips-go-crypto-00400: ChaCha20-Poly1305 usage
-func EncryptWithChaCha20Poly1305(data []byte) ([]byte, error) {
-	key := make([]byte, chacha20poly1305.KeySize)
-	copy(key, []byte("chacha20-key-for-encryption!"))
-
-	aead, err := chacha20poly1305.New(key)
-	if err != nil {
-		return nil, fmt.Errorf("chacha20poly1305 creation failed: %w", err)
-	}
-
-	nonce := make([]byte, aead.NonceSize())
-	return aead.Seal(nonce, nonce, data, nil), nil
 }
 
 // HashWithBlake2b hashes data using the Blake2b hash function.
